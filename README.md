@@ -24,3 +24,10 @@ do that gradually in this chapter.
 
 Press `ctrl+d` to "input" EOF. Press `ctrl+c` to signal the process to
 terminate immediately.
+
+### 2.2 Press `q` to quit
+Quit reading whenever we read the letter `q`.
+
+The program will read one line at a time. When it reaches `q`, it will stop
+reading from STDIN. The unread buffer in the input queue might be fed into the
+shell after the program exits.
