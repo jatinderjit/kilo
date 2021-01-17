@@ -67,3 +67,22 @@ struct termios {
 ```
 
 Read more about [terminal](./docs/terminal.md).
+
+### 2.4 Disable raw mode at exit
+
+Restore the terminals original attributes when the program exits.
+
+```c
+// Register a function to be called on exit.
+// The function will be called automatically when the program exits, whether by
+// returning from `main` or by calling the `exit` function.
+//
+// At least 32 functions can always be registered, and more are allowed as long
+// as sufficient memory can be allocated.
+atexit(disableRawMode);
+```
+
+Now the unread buffer after the letter `q` won't be fed into the shell after the
+program quits, because of the `TCSAFLUSH` option passed to `tcsetattr` when the
+program exits. It discards any unread input before applying the changes to the
+terminal.

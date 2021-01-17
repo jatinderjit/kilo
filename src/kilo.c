@@ -1,11 +1,18 @@
+#include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
 
-void enableRawMode() {
-    struct termios raw;
+struct termios orig_termios;
 
-    // #define STDIN_FILENO 0 /* standard input file descriptor */
-    tcgetattr(STDIN_FILENO, &raw);
+void disableRawMode() {
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+}
+
+void enableRawMode() {
+    tcgetattr(STDIN_FILENO, &orig_termios);
+    atexit(disableRawMode);
+
+    struct termios raw = orig_termios;
 
     // Turn off echoing the user input.
     // This mode is also used in terminals to input passwords.
