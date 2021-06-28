@@ -46,7 +46,7 @@ mode, but gets in our way.
 
 ```c
 // c_lflag: "Local" flags - dumping ground for other state
-struct termios {
+struct termios {  /* termios.h */
     tcflag_t        c_iflag;        /* input flags */
     tcflag_t        c_oflag;        /* output flags */
     tcflag_t        c_cflag;        /* control flags */
@@ -56,14 +56,14 @@ struct termios {
     speed_t         c_ospeed;       /* output speed */
 };
 
-#define STDIN_FILENO 0 /* standard input file descriptor */
+#define STDIN_FILENO 0 /* unistd.h: standard input file descriptor */
 
 // Bitflag
-#define ECHO 0x00000008 /* enable echoing */
+#define ECHO 0x00000008 /* termios.h: enable echoing */
 
 // Wait for any pending output to be written to the terminal and discard any
 // input that hasn't been read
-#define TCSAFLUSH 2 /* drain output, flush input */
+#define TCSAFLUSH 2 /* termios.h: drain output, flush input */
 ```
 
 Read more about [terminal](./docs/terminal.md).
@@ -79,10 +79,41 @@ Restore the terminals original attributes when the program exits.
 //
 // At least 32 functions can always be registered, and more are allowed as long
 // as sufficient memory can be allocated.
-atexit(disableRawMode);
+atexit(disableRawMode);  /* stdlib.h */
 ```
 
 Now the unread buffer after the letter `q` won't be fed into the shell after the
 program quits, because of the `TCSAFLUSH` option passed to `tcsetattr` when the
 program exits. It discards any unread input before applying the changes to the
 terminal.
+
+### 2.5 Turn off canonical mode
+
+```c
+// Read the input in lines
+#define ICANON 0x00000100 /* termios.h: canonicalize input lines */
+```
+
+Now the program will quit as soon as we press `q`.
+
+### 2.6 Display keypresses
+
+Print each byte as it's `read()`. Print only the ASCII value also if it's a
+printable character.
+
+```c
+// ASCII codes 0-31 and 127 are control characters.
+// ASCII codes 32-126 are printable characters.
+iscntrl(c);  /* ctype.h: is CONTROL type character  */
+```
+
+We can see that several ordinary keys translate to characters: `Tab`, `Enter`,
+`Page Down`, `Home`, `End`, `Backspace`, `Delete`, and a few key combinations
+with `Ctrl` (`Ctrl-A`, `Ctrl-D`, etc).
+
+* `Ctrl-A` - `Ctrl-Z` translate to ASCII code 1-26, although a few of them won't
+  be visible (`Ctrl-C`, `Ctrl-Z`, `Ctrl-S`, `Ctrl-Q`).
+* `Ctrl-S` tells the program to stop sending output. `Ctrl-Q` resumes it.
+* A few keys translate to 3 or 4 bytes - starting with `27`, `[`, and then one
+  or two other characters.
+* `Backspace` is code 127. and `Delete` is a 4 byte sequence.
